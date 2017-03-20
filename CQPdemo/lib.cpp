@@ -1,4 +1,4 @@
-#include "lib.h"
+#include "stdafx.h"
 std::vector<std::string> split(std::string str, std::string pattern)
 {
 	std::string::size_type pos;
