@@ -21,6 +21,5 @@
 #include "cqp.h"
 #include "message.h"
 #include "sqlite3.h"
+#include "learn.h"
 
-
-using namespace std;

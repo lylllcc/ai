@@ -23,7 +23,7 @@ message::message(int ac, int type, int64_t id,const char * mes)
 
 	//消息分块
 	this->mes = mes;
-	string temp_mes(mes);
+	std::string temp_mes(mes);
 	this->mes_block = split(mes, " ");
 
 	//消息判断
@@ -71,12 +71,20 @@ void message::deal_message()
 
 void message::deal_learn()
 {
-	sqlite3 *db;
-	char *zErrMsg = 0;
-	int rc = sqlite3_open("learn.db",&db);
-	char *sql = "CREATE TABLE IF NOT EXISTS learn(key char(200),value char(200))";
-	sqlite3_exec(db, sql,0,0,0);
-	char lear[100];
-	strcpy_s(lear, mes_block[1].c_str());
+
+	Learn l;
+	l.create_tabel();
+	char key[1024],*value;
+	strcpy_s(key, mes_block[1].c_str());
+
+	//学习过的
+	if (l.find_by_key(key, value)) {
+
+	}
+	//没有学习过
+	else {
+
+	}
+
 	CQ_sendPrivateMsg(ac, qqid, lear);
 }
