@@ -87,9 +87,13 @@ CQEVENT(int32_t, __eventPrivateMsg, 24)(int32_t subType, int32_t sendTime, int64
 	//如果要回复消息，请调用酷Q方法发送，并且这里 return EVENT_BLOCK - 截断本条消息，不再继续处理  注意：应用优先级设置为"最高"(10000)时，不得使用本返回值
 	//如果不回复消息，交由之后的应用/过滤器处理，这里 return EVENT_IGNORE - 忽略本条消息
 
-	message test(ac,0,fromQQ,msg);
+	message qq_mes(ac,fromQQ,msg);
+	if (qq_mes.jude() != other) {
+		qq_mes.deal_message();
+		return EVENT_BLOCK;
+	}
 
-	return EVENT_BLOCK;
+	return EVENT_IGNORE;
 }
 
 
@@ -98,6 +102,11 @@ CQEVENT(int32_t, __eventPrivateMsg, 24)(int32_t subType, int32_t sendTime, int64
 */
 CQEVENT(int32_t, __eventGroupMsg, 36)(int32_t subType, int32_t sendTime, int64_t fromGroup, int64_t fromQQ, const char *fromAnonymous, const char *msg, int32_t font) {
 
+	message group_mes(ac, fromGroup, fromQQ, msg);
+	if (group_mes.jude() != other) {
+		group_mes.deal_message();
+		return EVENT_BLOCK;
+	}
 	return EVENT_IGNORE; //关于返回值说明, 见“_eventPrivateMsg”函数
 }
 

@@ -1,34 +1,34 @@
 #include "stdafx.h"
 #include "message.h"
 
-int callback(void *NotUsed, int argc, char **argv, char **azColName) {
-	int i;
-	for (i = 0; i < argc; i++) {
-		printf("%s = %s", azColName[i], argv[i] ? argv[i] : "NULL");
-	}
-	printf("");
-	return 0;
-}
-message::message(int ac, int type, int64_t id,const char * mes)
+
+message::message(int ac, int64_t id,const char * mes)
 {
-	//判断消息类型
+	
 
-	this->type = type;
-	if (type == 0)
-		this->qqid = id;
-	else if (type == 1)
-		this->groupid = id;
-
+	this->qqid = id;
 	this->ac = ac;
+	this->groupid = -1;
 
 	//消息分块
 	this->mes = mes;
 	std::string temp_mes(mes);
 	this->mes_block = split(mes, " ");
 
-	//消息判断
-	jude();
-	deal_message();
+}
+
+message::message(int ac, int64_t groupid, int64_t qqid, const char * mes)
+{
+	this->ac = ac;
+	this->groupid = groupid;
+	this->qqid = qqid;
+	this->mes = mes;
+
+	//消息分块
+	this->mes = mes;
+	std::string temp_mes(mes);
+	this->mes_block = split(mes, " ");
+	
 }
 
 message::message()
@@ -45,11 +45,15 @@ mes_code message::jude()
 		m_mes_code = learn;
 		return learn;
 	}
-	if (mes_block[0] == "应用" && mes_block.size() == 2) {
-		m_mes_code = learn;
-		return app;
+	if (mes_block.size() == 1) {
+		Learn l;
+		std::string temp;
+		if (l.find_by_key(mes_block[0], temp)) {
+			m_mes_code = learned;
+			return learned;
+		}
+			
 	}
-	
 	m_mes_code = other;
 	return other;
 }
@@ -60,9 +64,8 @@ void message::deal_message()
 	case learn:
 		deal_learn();
 		break;
-	case app:
-		break;
 	case learned:
+		deal_learned();
 		break;
 	case other:
 		break;
@@ -74,17 +77,44 @@ void message::deal_learn()
 
 	Learn l;
 	l.create_tabel();
-	char key[1024],*value;
-	strcpy_s(key, mes_block[1].c_str());
 
+	std::string key = mes_block[1],value = mes_block[2],temp;
 	//学习过的
-	if (l.find_by_key(key, value)) {
-
+	if (l.find_by_key(key, temp)) {
+		l.update(key, value);
 	}
 	//没有学习过
 	else {
-
+		l.insert(key, value);
 	}
 
-	CQ_sendPrivateMsg(ac, qqid, lear);
+	std::string learn_str = "我记住\"" + key + "\"的回复了。";
+
+	//std::cout << "学习";
+	if (groupid == -1) {
+		CQ_sendPrivateMsg(ac, qqid, learn_str.c_str());
+	}else
+	{
+		CQ_sendGroupMsg(ac, groupid, learn_str.c_str());
+	}
+	//system("pause");
+	
+}
+
+void message::deal_learned()
+{
+	Learn l;
+	l.create_tabel();
+	std::string learned;
+	l.find_by_key(mes_block[0], learned);
+	if (groupid == -1) {
+		CQ_sendPrivateMsg(ac, qqid, learned.c_str());
+	}
+	else {
+		CQ_sendGroupMsg(ac, groupid, learned.c_str());
+	}
+		
+	//std::cout << learned;
+	//system("pause");
+
 }
